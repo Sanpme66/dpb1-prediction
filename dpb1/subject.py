@@ -143,7 +143,7 @@ class Subject(object):
         Returns boolean on whether any DPB1 single-locus genotypes (SLGs) were 
         imputed.
         """
-        return len([slg for slg in self.SLUGs if slg.frequency != None]) == 0
+        return not [slg for slg in self.SLUGs if slg.frequency != None]
 
     def generate_tce_genotypes(self):
         tce_slug_map = {}
@@ -156,7 +156,7 @@ class Subject(object):
             elif ((not self.SLUGs or
                    self.no_imputed_slgs())
                     and self.dpb1.potential_SLGs):
-                tce_pairs = set([slg.get_sorted_TCEs() for slg in self.dpb1.potential_SLGs])
+                tce_pairs = {slg.get_sorted_TCEs() for slg in self.dpb1.potential_SLGs}
                 self.tce_genotypes = [TCE_SLUG(tce_pair, probability=None) for tce_pair in tce_pairs]
                 self.tce_genotypes.sort(key=operator.attrgetter('name'))
                 self._generate_tce_groups()
@@ -170,8 +170,10 @@ class Subject(object):
             else:
                 tce_slug_map[sorted_tce_name] = [dpb1_slug]
         self.tce_genotypes = []
-        for tce_name, dpb1_slug_list in tce_slug_map.items():
-            self.tce_genotypes.append(TCE_SLUG(tce_name, dpb1_slug_list=dpb1_slug_list))
+        self.tce_genotypes.extend(
+            TCE_SLUG(tce_name, dpb1_slug_list=dpb1_slug_list)
+            for tce_name, dpb1_slug_list in tce_slug_map.items()
+        )
         self._order_by_probability(self.tce_genotypes)
         self._generate_tce_groups()
         return self.tce_genotypes
@@ -206,7 +208,7 @@ class Subject(object):
         and dividing each SLUG's frequency by that sum.
         :return: None
         """
-        dpb1_sum = sum([SLUG.frequency for SLUG in self.SLUGs])
+        dpb1_sum = sum(SLUG.frequency for SLUG in self.SLUGs)
         for SLUG in self.SLUGs:
             SLUG.probability = SLUG.frequency / dpb1_sum
         
@@ -224,9 +226,11 @@ class Subject(object):
         epsilon value.
         :return: List of SLGs objects
         """
-        return [SLG for SLG in SLGs 
-                if SLG.probability == None or 
-                   SLG.probability > self.epsilon]
+        return [
+            SLG
+            for SLG in SLGs
+            if SLG.probability is None or SLG.probability > self.epsilon
+        ]
     
     def filter_SLGs(self):
         """

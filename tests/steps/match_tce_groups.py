@@ -41,9 +41,14 @@ def step_impl(context):
 @given('these expected match categories and probabilities')
 def step_impl(context):
     context.matches_tce_exp = []
-    for row in context.table:
-        context.matches_tce_exp.append(MatchGrade([], name=row['Match category'],
-                                       probability=float(row['Probability'])))
+    context.matches_tce_exp.extend(
+        MatchGrade(
+            [],
+            name=row['Match category'],
+            probability=float(row['Probability']),
+        )
+        for row in context.table
+    )
 
 @when('obtaining the TCE match categories between the recipient and donor')
 def step_impl(context):

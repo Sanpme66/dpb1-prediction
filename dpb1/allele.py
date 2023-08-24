@@ -55,7 +55,7 @@ class Allele(object):
                 locus, fields = self.name.split('*')
             except:
                 raise InvalidAlleleError(self.name, "Allele needs to contain exactly one asterisk '*'.")
-        if not re.match(locus_regex + '$', locus):
+        if not re.match(f'{locus_regex}$', locus):
             raise InvalidAlleleError(self.name, "The allele's locus is not supported. "
                                             "Please use A, C, B, DRB1, DRB3, DRB4, DRB5, DQB1, or DPB1.")
 
@@ -64,23 +64,22 @@ class Allele(object):
                                             "Please include at least one field (integers). "
                                             "Additional fields are appended with a preceding semicolon ':'. "
                                             "For example, A*01:01 is a valid format but A*01:01: is not.")
-        
+
         var_expression = (re.search('\d+[A-Z]$', self.name) and
                           fields[-1] or None)
         if var_expression: fields = fields[:-1]
 
-        if not resolution:
-            if re.match('N+', fields):
-                fields = [None]
-                resolution = None
-            else:
-                fields = fields.split(':')
-                resolution = (re.match('^[A-Z]+$', fields[1]) and 'intermediate' or
-                            re.match('^[0-9]+$', fields[1]) and 'high' or None)
-                if not resolution:
-                    raise InvalidAlleleError(self.name, "The level of typing resolution cannot be determined.")
-        else:
+        if resolution:
             fields = [fields]
+        elif re.match('N+', fields):
+            fields = [None]
+            resolution = None
+        else:
+            fields = fields.split(':')
+            resolution = (re.match('^[A-Z]+$', fields[1]) and 'intermediate' or
+                        re.match('^[0-9]+$', fields[1]) and 'high' or None)
+            if not resolution:
+                raise InvalidAlleleError(self.name, "The level of typing resolution cannot be determined.")
         return locus, fields, resolution, var_expression == 'N'
 
     def __repr__(self):

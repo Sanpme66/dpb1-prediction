@@ -43,20 +43,19 @@ if os.environ.get('Environment'):
 app = Flask(__name__)
 Compress(app)
 flask_env = os.environ.get("FLASK_ENV")
-if flask_env is not None:
-    if flask_env.startswith('dev'):
-        app.config.from_object(config.DevConfig())
-    elif flask_env.startswith('qa'):
-        app.config.from_object(config.QAConfig())
-    elif flask_env.startswith('preprod'):
-        app.config.from_object(config.PreProdConfig())
-    elif flask_env.startswith('prod'):
-        app.config.from_object(config.ProdConfig())
-    else:
-        app.config.from_object(config.LocalConfig())
-else:
+if flask_env is None:
     app.config.from_object(config.LocalConfig())
 
+elif flask_env.startswith('dev'):
+    app.config.from_object(config.DevConfig())
+elif flask_env.startswith('qa'):
+    app.config.from_object(config.QAConfig())
+elif flask_env.startswith('preprod'):
+    app.config.from_object(config.PreProdConfig())
+elif flask_env.startswith('prod'):
+    app.config.from_object(config.ProdConfig())
+else:
+    app.config.from_object(config.LocalConfig())
 api = Api(app)
 dpb1_prediction = api.namespace('dpb1-prediction', description="Given a subject's population and typing, this service predicts DPB1 alleles, TCE groups, and permissiveness matching.")
 dpb1_imputation = api.namespace('dpb1-imputation', description="Given (a) subjects' imputed phased multi-locus unambiguous genotypes, this service predicts DPB1 alleles and TCE groups.")

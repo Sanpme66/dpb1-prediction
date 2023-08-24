@@ -54,11 +54,14 @@ class Imputation(object):
     def set_imputation(self, imputation):
         genotypes = []
         for hap_pop_freq in imputation:
-            hpf_pair = []
-            for index in ['1', '2']:
-                hpf_pair.append(Haplotype(name=hap_pop_freq['haplotype' + index],
-                                          population=hap_pop_freq['population' + index],
-                                          frequency=float(hap_pop_freq['frequency' + index])))
+            hpf_pair = [
+                Haplotype(
+                    name=hap_pop_freq[f'haplotype{index}'],
+                    population=hap_pop_freq[f'population{index}'],
+                    frequency=float(hap_pop_freq[f'frequency{index}']),
+                )
+                for index in ['1', '2']
+            ]
             genotypes.append(Genotype(hpf_pair))
         self.genotypes = genotypes
 

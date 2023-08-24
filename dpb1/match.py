@@ -51,9 +51,8 @@ class Matches(object):
                 match_grade = MatchGrade([tce_geno_recip, tce_geno_donor])
                 if match_grade.name not in match_grades:
                     match_grades[match_grade.name] = match_grade
-                else:
-                    if match_grade.probability:
-                        match_grades[match_grade.name].probability = match_grades[match_grade.name].probability + match_grade.probability
+                elif match_grade.probability:
+                    match_grades[match_grade.name].probability = match_grades[match_grade.name].probability + match_grade.probability
         match_grades = list(match_grades.values())
         self._order_by_probability(match_grades)
 

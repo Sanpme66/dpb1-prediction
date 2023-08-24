@@ -5,9 +5,10 @@ from dpb1.tce import TCE_SLUG, TCE_map
 @given('these expected TCE SLUGs')
 def step_impl(context):
     context.tce_exp = []
-    for row in context.table:
-        context.tce_exp.append(TCE_SLUG(row['TCE SLUG'],
-                                        probability=float(row['Probability'])))
+    context.tce_exp.extend(
+        TCE_SLUG(row['TCE SLUG'], probability=float(row['Probability']))
+        for row in context.table
+    )
 
 @when('generating the DPB1 SLUGs and TCE groups for the {subject_types}')
 def step_impl(context, subject_types):

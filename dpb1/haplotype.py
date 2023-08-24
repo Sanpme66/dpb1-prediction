@@ -98,9 +98,7 @@ class Haplotype(object):
         """
         Return ordered list of allele names (str) for this haplotype.
         """
-        if not self.alleles:
-            return []
-        return list(self.alleles.keys())
+        return [] if not self.alleles else list(self.alleles.keys())
 
     def formatted_name(self, loci, drbx=None):
         """
@@ -113,10 +111,7 @@ class Haplotype(object):
         """
         alleles = []
         for locus in loci:
-            if locus == 'DRBX' and drbx:
-                alleles += [drbx]
-            else:
-                alleles += [self.alleles[locus].name]
+            alleles += [drbx] if locus == 'DRBX' and drbx else [self.alleles[locus].name]
         return '~'.join(alleles)
             
     def _get_alleles(self, haplotype_name):
@@ -128,19 +123,16 @@ class Haplotype(object):
         """
         alleles = {}
         for allele_name in haplotype_name.split('~'):
-            if allele_name:
-                allele = Allele(allele_name)
-                if allele.locus in alleles:
-                    raise InvalidHaplotypeError(haplotype_name,
-                        "The haplotype contains duplicate loci.")
-                else:
-                    locus = (allele.locus in ["DRB3", "DRB4", "DRB5"] and
-                             "DRBX" or allele.locus)
-                    alleles[locus] = allele
-            else:
+            if not allele_name:
                 raise InvalidHaplotypeError(haplotype_name,
                         "The haplotype contains a non-Allele value.")
 
+            allele = Allele(allele_name)
+            if allele.locus in alleles:
+                raise InvalidHaplotypeError(haplotype_name,
+                    "The haplotype contains duplicate loci.")
+            locus = "DRBX" if allele.locus in ["DRB3", "DRB4", "DRB5"] else allele.locus
+            alleles[locus] = allele
         if not alleles:
             raise InvalidHaplotypeError(haplotype_name,
                     "No valid alleles were supplied through this haplotype.")

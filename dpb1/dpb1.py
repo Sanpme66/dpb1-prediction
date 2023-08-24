@@ -81,9 +81,7 @@ class DPB1s(object):
         known DPB1 alleles are unambiguous (only once TCE group)
         :return: boolean
         """
-        tce_pairs = set()
-        for slg in self.potential_SLGs:
-            tce_pairs.add(slg.get_sorted_TCEs())
+        tce_pairs = {slg.get_sorted_TCEs() for slg in self.potential_SLGs}
         return len(tce_pairs) == 1
 
     def get_known_dpb1_SLG(self):
@@ -112,9 +110,9 @@ class DPB1(Allele):
         self.tce = None
 
     def calculate_frequency(self, parent_haplotype):
-        self.frequency = (mpf(parent_haplotype.frequency) * 
-                          mpf(sum([haplotype.frequency 
-                              for haplotype in self.haplotypes])))
+        self.frequency = mpf(parent_haplotype.frequency) * mpf(
+            sum(haplotype.frequency for haplotype in self.haplotypes)
+        )
     
     def get_potential_DPB1s(self, ard):
         """
@@ -122,10 +120,7 @@ class DPB1(Allele):
         :return: list of str
         """
         if self.resolution == "high":
-            if ard:
-                return [ard.redux_gl(self.name, 'lgx')]
-            else:
-                return [self.name]
+            return [ard.redux_gl(self.name, 'lgx')] if ard else [self.name]
         elif self.resolution == "intermediate":
             return self._get_potential_alleles(ard)
 
@@ -137,7 +132,7 @@ class DPB1(Allele):
         """
         url = "https://hml.nmdp.org/mac/api/expand?typing="
         try:
-            response = requests.get(url + 'HLA-' + self.name)
+            response = requests.get(f'{url}HLA-{self.name}')
             data = json.loads(response.content)
             expanded_list = [result['expanded'].replace('HLA-','') for result in data]
             if ard:
@@ -180,7 +175,10 @@ class DPB1_SLUG(object):
             try:
                 alleles.append(Allele(self.ard.redux_gl(allele.name, 'lgx')))
             except:
-                raise InvalidDpb1Error(allele, "%s is not able to be reduced via the antigen-recognition domain." % allele.name)
+                raise InvalidDpb1Error(
+                    allele,
+                    f"{allele.name} is not able to be reduced via the antigen-recognition domain.",
+                )
         self.alleles = alleles
     
     def _sort(self, alleles):
@@ -194,7 +192,7 @@ class DPB1_SLUG(object):
         :param Alleles: Two-element list of two DPB1 Alleles
         :type allotypes: list of DPB1 Alleles
         """
-        if not all([isinstance(allele, Allele) or isinstance(allele, DPB1) for allele in alleles]):
+        if not all(isinstance(allele, (Allele, DPB1)) for allele in alleles):
             alleles = [DPB1(allele) for allele in alleles]
             self.alleles = alleles
         dpb1_one, dpb1_two = alleles
@@ -207,11 +205,10 @@ class DPB1_SLUG(object):
                     reversed = True
                 elif int(fields_a[i]) < int(fields_b[i]):
                     break
-            else:
-                if str(fields_a[i]) > str(fields_b[i]):
-                    reversed = True
-                elif str(fields_a[i]) < str(fields_b[i]):
-                    break
+            elif str(fields_a[i]) > str(fields_b[i]):
+                reversed = True
+            elif str(fields_a[i]) < str(fields_b[i]):
+                break
             i += 1
         if reversed or len(fields_a) < len(fields_b):
             alleles.reverse()
@@ -224,8 +221,7 @@ class DPB1_SLUG(object):
         This value is doubled when the SLUG is heterozygous,
         according to the Hardy-Weinberg principle.
         """
-        zygosity_index = (self.alleles[0].name == self.alleles[1].name and
-                          1 or 2)
+        zygosity_index = 1 if self.alleles[0].name == self.alleles[1].name else 2
         frequency = ((self.alleles[0].frequency or 0) *
                 (self.alleles[1].frequency or 0) *
                 zygosity_index)

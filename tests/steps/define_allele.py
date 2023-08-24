@@ -11,7 +11,7 @@ def step_impl(context):
     try:
         context.allele = Allele(context.allele_name)
         if context.allele.fields[0]:
-            context.fields = ', '.join([f for f in context.allele.fields])
+            context.fields = ', '.join(list(context.allele.fields))
             context.resolution = context.allele.resolution
         else:
             context.fields = 'NA'
