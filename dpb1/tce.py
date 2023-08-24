@@ -54,7 +54,11 @@ class TCE_SLUG(object):
     
     def _calculate_probability(self):
         if self.dpb1_slugs:
-            return sum([dpb1_slug.probability for dpb1_slug in self.dpb1_slugs if dpb1_slug.probability])
+            return sum(
+                dpb1_slug.probability
+                for dpb1_slug in self.dpb1_slugs
+                if dpb1_slug.probability
+            )
         else:
             return None
     
@@ -64,17 +68,14 @@ class TCE_SLUG(object):
         0s are disregarded, unless they're the only option.
         """
         tces = [tce for tce in self.name.split('+') if tce != '0']
-        if not tces:
-            return '0'
-        return min(tces)
+        return '0' if not tces else min(tces)
 
     def __repr__(self):
         return str({'tce_groups' : str(self.name),
                 'probability' : self.probability and str(round(self.probability, 3))})
 
     def serialize(self):
-        serialized = {}
-        serialized['tce_groups'] = self.name
+        serialized = {'tce_groups': self.name}
         if self.probability != None:
             serialized['probability'] = float(self.probability)
         return serialized

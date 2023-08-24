@@ -37,8 +37,8 @@ class Genotype(object):
             self.name = haplotypes
             self.haplotypes = self._get_haplotypes(haplotypes)
         elif (len(haplotypes) == 2):
-                self.name = haplotypes[0].name + '+' + haplotypes[1].name
-                self.haplotypes = haplotypes
+            self.name = f'{haplotypes[0].name}+{haplotypes[1].name}'
+            self.haplotypes = haplotypes
         else:
             raise InvalidGenotypeError(haplotypes,
                     "Please provide a genotype name or two-element list of valid Haplotype objects")
@@ -56,12 +56,11 @@ class Genotype(object):
                         "The genotype does not contain only two haplotypes.")
         haplotypes = []
         for haplotype_name in haplotype_names:
-            if haplotype_name:
-                haplotype = dpb1.haplotype.Haplotype(name=haplotype_name)
-                haplotypes.append(haplotype)
-            else:
+            if not haplotype_name:
                 raise InvalidGenotypeError(genotype_name,
                         "The genotype contains a non-haplotype value.")
+            haplotype = dpb1.haplotype.Haplotype(name=haplotype_name)
+            haplotypes.append(haplotype)
         return haplotypes
 
     def extract_DPB1_alleles(self, population_freqs):

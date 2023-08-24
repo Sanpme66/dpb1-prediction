@@ -14,4 +14,3 @@ def before_all(context):
 
     # Provide testing haplotype frequencies
     context.hap_freqs = HaplotypeFreqs(directory='tests/data/frequencies')
-    pass

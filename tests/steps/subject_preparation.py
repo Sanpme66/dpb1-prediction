@@ -10,10 +10,7 @@ def step_impl(context):
     context.glstring = []
     glstring = []
     for row in context.table:
-        alleles = []
-        for allele in row:
-            if allele:
-                alleles.append(allele)
+        alleles = [allele for allele in row if allele]
         glstring.append("+".join(alleles))
     context.glstring = '^'.join(glstring)
 
@@ -46,11 +43,9 @@ def step_impl(context, haplotype_name):
         for haplotype in genotype.haplotypes:
             if haplotype.name == haplotype_name:
                 context.haplotype = haplotype
-                pass
 
 @when('focusing on the imputed genotype "{genotype_name}"')
 def step_impl(context, genotype_name):
     for genotype in context.subjects['donor'].imputation.genotypes:
         if genotype.name == genotype_name:
             context.genotype = genotype
-            pass

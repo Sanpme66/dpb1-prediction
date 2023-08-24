@@ -114,7 +114,7 @@ class PopulationHaplotypeFreqs(object):
         :param population: str
         :return: str
         """
-        return '%s/%s.freqs.gz' % (self.directory, self.population)
+        return f'{self.directory}/{self.population}.freqs.gz'
 
     def _get_headers(self):
         """
@@ -126,10 +126,9 @@ class PopulationHaplotypeFreqs(object):
         try:
             with gzip.open(self.file_path, mode='rt') as f:
                 reader = csv.reader(f)
-                headers = next(reader)
-                return headers
+                return next(reader)
         except:
-            message = 'Haplotype frequency files are not present in ' + self.directory 
+            message = f'Haplotype frequency files are not present in {self.directory}'
             raise InvalidFrequenciesError(self.file_path, message)
 
 class HaplotypeFreqs(object):
@@ -153,21 +152,19 @@ class HaplotypeFreqs(object):
         n = 1
         for freq_file in freq_files:
             pop_cde = freq_file.split('.freqs')[0]
-            pop_cde_match = re.search('[A-Z]+', freq_file)
-            if pop_cde_match:
+            if pop_cde_match := re.search('[A-Z]+', freq_file):
                 pop_cde = pop_cde_match.group()
                 population = Population(pop_cde)
-                file_path = self.directory + '/' + freq_file
+                file_path = f'{self.directory}/{freq_file}'
                 if population.valid and (not populations or pop_cde in populations):
                     start_time = time.time()
                     pop_freqs[population.code] = PopulationHaplotypeFreqs(pop_cde,
                                                     locus_order=self.locus_order,
                                                     directory=self.directory,
                                                     file_path=file_path)
-                    print('%s/%s - %s - %s sec' % 
-                            (n,
-                            len(populations) if populations else len(freq_files),
-                            pop_cde, round(time.time() - start_time, 3)))
+                    print(
+                        f'{n}/{len(populations) if populations else len(freq_files)} - {pop_cde} - {round(time.time() - start_time, 3)} sec'
+                    )
                     n += 1
         return pop_freqs
     
@@ -178,7 +175,10 @@ class HaplotypeFreqs(object):
         if pop_code in self.populations:
             return self.populations[pop_code]
         else:
-            raise InvalidFrequenciesError(self.directory, 'The %s population was not properly loaded.' % pop_code)
+            raise InvalidFrequenciesError(
+                self.directory,
+                f'The {pop_code} population was not properly loaded.',
+            )
 
 class InvalidFrequenciesError(Exception):
 
